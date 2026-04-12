@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Merch — Motif Movement">
+  <section class="pt-10 sm:pt-14">
+    <h2 class="font-[Space_Grotesk,system-ui,sans-serif] text-3xl sm:text-4xl font-bold">Merch</h2>
+    <p class="mt-4 text-neutral-400">Send us photos and prices for each item. Also let us know &mdash; do you want to sell directly through the site, or link out to an existing store?</p>
+    <div class="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {
+        Array.from({ length: 4 }).map((_, i) => (
+          <div class="space-y-2">
+            <div class="aspect-square bg-neutral-900 rounded-md" />
+            <div class="text-sm text-neutral-300">Item {i + 1}</div>
+            <div class="text-xs text-neutral-500">$—</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Layout>

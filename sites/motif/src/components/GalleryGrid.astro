@@ -1,0 +1,68 @@
+---
+// GalleryGrid — fetches gallery images from the venyou public API and renders them client-side.
+// Displays a loading skeleton grid, then replaces it with real photos.
+---
+
+<div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+  {Array.from({ length: 6 }).map(() => (
+    <div class="gallery-skeleton aspect-square bg-neutral-900 rounded-md animate-pulse" />
+  ))}
+</div>
+
+<script>
+  const API = import.meta.env.PUBLIC_API_URL;
+
+  async function loadGallery() {
+    const container = document.getElementById("gallery-grid");
+    if (!container || !API) return;
+
+    try {
+      const res = await fetch(`${API}/gallery`);
+      if (!res.ok) throw new Error(res.statusText);
+      const { images } = await res.json();
+
+      if (!images || images.length === 0) {
+        container.innerHTML = `
+          <p class="col-span-full text-neutral-500 text-sm">Gallery coming soon.</p>
+        `;
+        return;
+      }
+
+      container.innerHTML = images
+        .map(
+          (img: {
+            id: string;
+            url: string;
+            alt?: string;
+            caption?: string;
+            width?: number;
+            height?: number;
+          }) => {
+            const altText = img.alt ?? img.caption ?? "";
+            return `
+              <a href="${img.url}" target="_blank" rel="noopener" class="block group">
+                <div class="aspect-square bg-neutral-900 rounded-md overflow-hidden">
+                  <img
+                    src="${img.url}"
+                    alt="${altText}"
+                    loading="lazy"
+                    ${img.width ? `width="${img.width}"` : ""}
+                    ${img.height ? `height="${img.height}"` : ""}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                ${img.caption ? `<p class="mt-1 text-xs text-neutral-500">${img.caption}</p>` : ""}
+              </a>
+            `;
+          }
+        )
+        .join("");
+    } catch {
+      container.innerHTML = `
+        <p class="col-span-full text-neutral-500 text-sm">Gallery coming soon.</p>
+      `;
+    }
+  }
+
+  loadGallery();
+</script>

@@ -1,0 +1,87 @@
+---
+// EventList — fetches upcoming events from the venyou public API and renders them client-side.
+// Displays a loading skeleton, then replaces it with live event data.
+---
+
+<section id="event-list" class="space-y-3">
+  {Array.from({ length: 3 }).map(() => (
+    <div class="event-skeleton border border-neutral-900 rounded-lg p-5 animate-pulse">
+      <div class="h-3 w-24 bg-neutral-800 rounded" />
+      <div class="mt-2 h-6 w-48 bg-neutral-800 rounded" />
+      <div class="mt-2 h-3 w-32 bg-neutral-800 rounded" />
+    </div>
+  ))}
+</section>
+
+<script>
+  const API = import.meta.env.PUBLIC_API_URL;
+
+  async function loadEvents() {
+    const container = document.getElementById("event-list");
+    if (!container || !API) return;
+
+    try {
+      const res = await fetch(`${API}/events`);
+      if (!res.ok) throw new Error(res.statusText);
+      const { events } = await res.json();
+
+      if (!events || events.length === 0) {
+        container.innerHTML = `
+          <p class="text-neutral-500 text-sm">No upcoming events — check back soon.</p>
+        `;
+        return;
+      }
+
+      container.innerHTML = events
+        .map(
+          (e: {
+            id: string;
+            title: string;
+            description?: string;
+            eventDate: string;
+            startTime?: string;
+            ticketUrl?: string;
+            flyerUrl?: string;
+            venue?: { name: string; city?: string; state?: string };
+          }) => {
+            const date = new Date(e.eventDate);
+            const formatted = date.toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+            const time = e.startTime
+              ? new Date(e.startTime).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "";
+            const venue = e.venue
+              ? `${e.venue.name}${e.venue.city ? ` · ${e.venue.city}` : ""}${e.venue.state ? `, ${e.venue.state}` : ""}`
+              : "";
+            const ticketLink = e.ticketUrl
+              ? `<a href="${e.ticketUrl}" target="_blank" rel="noopener" class="mt-2 inline-block text-sm text-neutral-100 underline underline-offset-2 hover:text-white">Tickets</a>`
+              : "";
+
+            return `
+              <li class="border border-neutral-900 rounded-lg p-5 hover:border-neutral-700 transition-colors list-none">
+                <div class="text-xs uppercase tracking-wider text-neutral-500">${formatted}${time ? ` · ${time}` : ""}</div>
+                <div class="mt-1 font-[Space_Grotesk,system-ui,sans-serif] text-xl font-bold">${e.title}</div>
+                ${venue ? `<div class="mt-1 text-sm text-neutral-400">${venue}</div>` : ""}
+                ${e.description ? `<div class="mt-2 text-sm text-neutral-400">${e.description}</div>` : ""}
+                ${ticketLink}
+              </li>
+            `;
+          }
+        )
+        .join("");
+    } catch {
+      container.innerHTML = `
+        <p class="text-neutral-500 text-sm">No upcoming events — check back soon.</p>
+      `;
+    }
+  }
+
+  loadEvents();
+</script>

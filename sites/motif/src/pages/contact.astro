@@ -1,0 +1,62 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Contact — Motif Movement">
+  <section class="pt-10 sm:pt-14">
+    <h2 class="font-[Space_Grotesk,system-ui,sans-serif] text-3xl sm:text-4xl font-bold">Bookings</h2>
+    <p class="mt-4 text-neutral-400">
+      Want Motif at your event? Drop the details below.
+    </p>
+
+    <form class="mt-8 space-y-4" method="post" action="#">
+      <div>
+        <label for="name" class="block text-sm text-neutral-400 mb-1">Your name</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          required
+          class="w-full rounded-md bg-neutral-900 border border-neutral-800 px-4 py-3 text-neutral-100 focus:outline-none focus:border-neutral-500"
+        />
+      </div>
+      <div>
+        <label for="email" class="block text-sm text-neutral-400 mb-1">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          class="w-full rounded-md bg-neutral-900 border border-neutral-800 px-4 py-3 text-neutral-100 focus:outline-none focus:border-neutral-500"
+        />
+      </div>
+      <div>
+        <label for="event_date" class="block text-sm text-neutral-400 mb-1">Event date</label>
+        <input
+          id="event_date"
+          name="event_date"
+          type="date"
+          class="w-full rounded-md bg-neutral-900 border border-neutral-800 px-4 py-3 text-neutral-100 focus:outline-none focus:border-neutral-500"
+        />
+      </div>
+      <div>
+        <label for="message" class="block text-sm text-neutral-400 mb-1">Tell us about it</label>
+        <textarea
+          id="message"
+          name="message"
+          rows="5"
+          class="w-full rounded-md bg-neutral-900 border border-neutral-800 px-4 py-3 text-neutral-100 focus:outline-none focus:border-neutral-500"
+        ></textarea>
+      </div>
+      <button
+        type="submit"
+        class="w-full sm:w-auto px-8 py-3 rounded-full bg-neutral-100 text-neutral-950 font-semibold hover:bg-white transition-colors"
+      >
+        Send inquiry
+      </button>
+      <p class="text-xs text-neutral-600 pt-2">
+        Form submissions will be wired up before launch.
+      </p>
+    </form>
+  </section>
+</Layout>
