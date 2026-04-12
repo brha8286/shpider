@@ -10,14 +10,12 @@
 </div>
 
 <script>
-  const API = import.meta.env.PUBLIC_API_URL;
-
   async function loadGallery() {
     const container = document.getElementById("gallery-grid");
-    if (!container || !API) return;
+    if (!container) return;
 
     try {
-      const res = await fetch(`${API}/gallery`);
+      const res = await fetch("/api/gallery");
       if (!res.ok) throw new Error(res.statusText);
       const { images } = await res.json();
 

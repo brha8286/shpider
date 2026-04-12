@@ -1,0 +1,136 @@
+import { Env, requireAuth } from "./_auth";
+
+interface GalleryItem {
+  id: string;
+  url: string;
+  alt: string;
+  caption: string;
+  sortOrder: number;
+  isPublic: boolean;
+}
+
+const KV_KEY = "gallery";
+
+async function getGallery(env: Env): Promise<GalleryItem[]> {
+  const raw = await env.CONTENT.get(KV_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+async function setGallery(env: Env, items: GalleryItem[]): Promise<void> {
+  await env.CONTENT.put(KV_KEY, JSON.stringify(items));
+}
+
+// GET /api/gallery — public (no auth), returns only public images
+// GET /api/gallery?all=1 — admin (auth required), returns all images
+export const onRequestGet: PagesFunction<Env> = async (context) => {
+  const { request, env } = context;
+  const url = new URL(request.url);
+  const all = url.searchParams.get("all") === "1";
+
+  if (all) {
+    const denied = requireAuth(request, env);
+    if (denied) return denied;
+  }
+
+  let images = await getGallery(env);
+
+  if (!all) {
+    images = images.filter((i) => i.isPublic);
+  }
+
+  images = images.sort((a, b) => a.sortOrder - b.sortOrder);
+
+  return new Response(JSON.stringify({ images }), {
+    headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=30" },
+  });
+};
+
+// POST /api/gallery — admin only, add an image
+export const onRequestPost: PagesFunction<Env> = async (context) => {
+  const { request, env } = context;
+  const denied = requireAuth(request, env);
+  if (denied) return denied;
+
+  const body = (await request.json()) as Partial<GalleryItem>;
+  if (!body.url) {
+    return new Response(
+      JSON.stringify({ error: "url is required" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const images = await getGallery(env);
+  const maxSort = images.reduce((max, i) => Math.max(max, i.sortOrder), -1);
+
+  const item: GalleryItem = {
+    id: crypto.randomUUID(),
+    url: body.url,
+    alt: body.alt ?? "",
+    caption: body.caption ?? "",
+    sortOrder: maxSort + 1,
+    isPublic: body.isPublic ?? true,
+  };
+
+  images.push(item);
+  await setGallery(env, images);
+
+  return new Response(JSON.stringify(item), {
+    status: 201,
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
+// PUT /api/gallery — admin only, update an image (id in body)
+export const onRequestPut: PagesFunction<Env> = async (context) => {
+  const { request, env } = context;
+  const denied = requireAuth(request, env);
+  if (denied) return denied;
+
+  const body = (await request.json()) as Partial<GalleryItem> & { id: string };
+  if (!body.id) {
+    return new Response(
+      JSON.stringify({ error: "id is required" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const images = await getGallery(env);
+  const idx = images.findIndex((i) => i.id === body.id);
+  if (idx < 0) {
+    return new Response(
+      JSON.stringify({ error: "Image not found" }),
+      { status: 404, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  images[idx] = { ...images[idx], ...body };
+  await setGallery(env, images);
+
+  return new Response(JSON.stringify(images[idx]), {
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
+// DELETE /api/gallery — admin only, delete by id in query string
+export const onRequestDelete: PagesFunction<Env> = async (context) => {
+  const { request, env } = context;
+  const denied = requireAuth(request, env);
+  if (denied) return denied;
+
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  if (!id) {
+    return new Response(
+      JSON.stringify({ error: "id query param required" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  let images = await getGallery(env);
+  images = images.filter((i) => i.id !== id);
+  await setGallery(env, images);
+
+  return new Response(JSON.stringify({ ok: true }), {
+    headers: { "Content-Type": "application/json" },
+  });
+};

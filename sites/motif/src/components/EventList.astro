@@ -14,14 +14,12 @@
 </section>
 
 <script>
-  const API = import.meta.env.PUBLIC_API_URL;
-
   async function loadEvents() {
     const container = document.getElementById("event-list");
-    if (!container || !API) return;
+    if (!container) return;
 
     try {
-      const res = await fetch(`${API}/events`);
+      const res = await fetch("/api/events");
       if (!res.ok) throw new Error(res.statusText);
       const { events } = await res.json();
 
