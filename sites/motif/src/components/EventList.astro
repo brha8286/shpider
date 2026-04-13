@@ -32,32 +32,30 @@
 
       container.innerHTML = events
         .map(
-          (e: {
-            id: string;
-            title: string;
-            description?: string;
-            eventDate: string;
-            startTime?: string;
-            ticketUrl?: string;
-            flyerUrl?: string;
-            venue?: { name: string; city?: string; state?: string };
-          }) => {
-            const date = new Date(e.eventDate);
+          (e: any) => {
+            const date = new Date(e.eventDate + "T00:00:00");
             const formatted = date.toLocaleDateString("en-US", {
               weekday: "short",
               month: "short",
               day: "numeric",
               year: "numeric",
             });
-            const time = e.startTime
-              ? new Date(e.startTime).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })
-              : "";
-            const venue = e.venue
-              ? `${e.venue.name}${e.venue.city ? ` · ${e.venue.city}` : ""}${e.venue.state ? `, ${e.venue.state}` : ""}`
-              : "";
+            let time = "";
+            if (e.startTime && e.startTime.includes(":")) {
+              const [h, m] = e.startTime.split(":");
+              const hour = parseInt(h, 10);
+              const ampm = hour >= 12 ? "PM" : "AM";
+              const h12 = hour % 12 || 12;
+              time = `${h12}:${m} ${ampm}`;
+            }
+            let venue = "";
+            if (typeof e.venue === "object" && e.venue?.name) {
+              venue = `${e.venue.name}${e.venue.city ? ` · ${e.venue.city}` : ""}${e.venue.state ? `, ${e.venue.state}` : ""}`;
+            } else if (typeof e.venue === "string" && e.venue) {
+              venue = e.venue;
+              if (e.city) venue += `, ${e.city}`;
+              if (e.state) venue += ` ${e.state}`;
+            }
             const ticketLink = e.ticketUrl
               ? `<a href="${e.ticketUrl}" target="_blank" rel="noopener" class="mt-2 inline-block text-sm text-neutral-100 underline underline-offset-2 hover:text-white">Tickets</a>`
               : "";

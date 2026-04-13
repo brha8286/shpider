@@ -46,15 +46,39 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 };
 
 // POST /api/gallery — admin only, add an image
+// Accepts either { url } for external links or { fileData, contentType, fileName } for uploads
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const denied = requireAuth(request, env);
   if (denied) return denied;
 
-  const body = (await request.json()) as Partial<GalleryItem>;
-  if (!body.url) {
+  const body = (await request.json()) as Partial<GalleryItem> & {
+    fileData?: string;
+    contentType?: string;
+    fileName?: string;
+  };
+
+  let url: string;
+
+  if (body.fileData && body.contentType) {
+    // File upload — decode base64 and store in KV
+    const id = crypto.randomUUID();
+    const binaryStr = atob(body.fileData);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+
+    await env.CONTENT.put(`image:${id}`, bytes.buffer, {
+      metadata: { contentType: body.contentType },
+    });
+
+    url = `/api/image/${id}`;
+  } else if (body.url) {
+    url = body.url;
+  } else {
     return new Response(
-      JSON.stringify({ error: "url is required" }),
+      JSON.stringify({ error: "Either a file or url is required" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
@@ -64,7 +88,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const item: GalleryItem = {
     id: crypto.randomUUID(),
-    url: body.url,
+    url,
     alt: body.alt ?? "",
     caption: body.caption ?? "",
     sortOrder: maxSort + 1,

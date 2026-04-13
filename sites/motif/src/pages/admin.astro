@@ -25,41 +25,64 @@ import Layout from "../layouts/Layout.astro";
       </div>
     </div>
 
-    <!-- Admin panel (hidden until authenticated) -->
+    <!-- Admin panel -->
     <div id="admin-panel" class="hidden">
       <div class="flex items-center justify-between mb-6">
         <h2 class="font-[Space_Grotesk,system-ui,sans-serif] text-2xl font-bold">Admin</h2>
         <button id="logout-btn" class="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">Log out</button>
       </div>
 
-      <!-- Tab switcher -->
+      <!-- Tabs -->
       <div class="flex gap-1 mb-6">
-        <button class="admin-tab px-4 py-2 rounded-full text-sm font-medium transition-colors bg-neutral-100 text-neutral-950" data-tab="events">Events</button>
-        <button class="admin-tab px-4 py-2 rounded-full text-sm font-medium transition-colors text-neutral-400 hover:text-neutral-100" data-tab="gallery">Gallery</button>
+        <button class="admin-tab px-4 py-2 rounded-full text-sm font-medium transition-colors bg-neutral-100 text-neutral-950" data-tab="events">
+          Events <span id="evt-count" class="ml-1 text-xs opacity-60"></span>
+        </button>
+        <button class="admin-tab px-4 py-2 rounded-full text-sm font-medium transition-colors text-neutral-400 hover:text-neutral-100" data-tab="gallery">
+          Gallery <span id="gal-count" class="ml-1 text-xs opacity-60"></span>
+        </button>
       </div>
 
-      <!-- EVENTS TAB -->
+      <!-- ==================== EVENTS TAB ==================== -->
       <div id="tab-events">
-        <!-- Add event form -->
-        <div class="bg-neutral-900 rounded-lg border border-neutral-800 p-4 mb-6">
-          <h3 class="text-sm font-semibold text-neutral-200 mb-3">Add event</h3>
-          <div class="space-y-3">
-            <input type="text" id="evt-title" placeholder="Event title *" class="admin-input" />
-            <div class="grid grid-cols-2 gap-3">
-              <input type="date" id="evt-date" class="admin-input" />
-              <input type="time" id="evt-time" class="admin-input" placeholder="Start time" />
+        <button id="evt-show-form" class="w-full mb-4 px-4 py-3 rounded-lg border border-dashed border-neutral-700 text-neutral-400 text-sm hover:border-neutral-500 hover:text-neutral-200 transition-colors">
+          + Add event
+        </button>
+
+        <!-- Add/Edit event form (hidden by default) -->
+        <div id="evt-form-wrap" class="hidden mb-6">
+          <div class="bg-neutral-900 rounded-lg border border-neutral-800 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 id="evt-form-title" class="text-sm font-semibold text-neutral-200">New event</h3>
+              <button id="evt-form-cancel" class="text-xs text-neutral-500 hover:text-neutral-300">Cancel</button>
             </div>
-            <input type="text" id="evt-venue" placeholder="Venue name" class="admin-input" />
-            <div class="grid grid-cols-2 gap-3">
-              <input type="text" id="evt-city" placeholder="City" class="admin-input" />
-              <input type="text" id="evt-state" placeholder="State" class="admin-input" />
+            <div class="space-y-3">
+              <input type="text" id="evt-title" placeholder="Event title *" class="admin-input" />
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-neutral-500 mb-1">Date *</label>
+                  <input type="date" id="evt-date" class="admin-input" />
+                </div>
+                <div>
+                  <label class="block text-xs text-neutral-500 mb-1">Start time</label>
+                  <input type="time" id="evt-time" class="admin-input" />
+                </div>
+              </div>
+              <input type="text" id="evt-venue" placeholder="Venue name" class="admin-input" />
+              <div class="grid grid-cols-2 gap-3">
+                <input type="text" id="evt-city" placeholder="City" class="admin-input" />
+                <input type="text" id="evt-state" placeholder="State" class="admin-input" />
+              </div>
+              <textarea id="evt-desc" rows={3} placeholder="Description (shown on your website)" class="admin-input"></textarea>
+              <input type="url" id="evt-ticket" placeholder="Ticket link" class="admin-input" />
+              <input type="url" id="evt-flyer" placeholder="Flyer image URL" class="admin-input" />
+              <div id="evt-flyer-preview" class="hidden">
+                <img id="evt-flyer-img" class="max-h-32 rounded-md border border-neutral-700" />
+              </div>
+              <input type="hidden" id="evt-edit-id" value="" />
+              <button id="evt-save-btn" class="w-full px-4 py-2.5 rounded-full bg-neutral-100 text-neutral-950 font-semibold text-sm hover:bg-white transition-colors">
+                Add event
+              </button>
             </div>
-            <textarea id="evt-desc" rows={2} placeholder="Description" class="admin-input"></textarea>
-            <input type="url" id="evt-ticket" placeholder="Ticket link (optional)" class="admin-input" />
-            <input type="url" id="evt-flyer" placeholder="Flyer image URL (optional)" class="admin-input" />
-            <button id="evt-add-btn" class="w-full px-4 py-2.5 rounded-full bg-neutral-100 text-neutral-950 font-semibold text-sm hover:bg-white transition-colors">
-              Add event
-            </button>
           </div>
         </div>
 
@@ -67,29 +90,48 @@ import Layout from "../layouts/Layout.astro";
         <div id="events-list" class="space-y-3"></div>
       </div>
 
-      <!-- GALLERY TAB -->
+      <!-- ==================== GALLERY TAB ==================== -->
       <div id="tab-gallery" class="hidden">
-        <!-- Add image form -->
-        <div class="bg-neutral-900 rounded-lg border border-neutral-800 p-4 mb-6">
-          <h3 class="text-sm font-semibold text-neutral-200 mb-3">Add image</h3>
-          <div class="space-y-3">
-            <input type="url" id="gal-url" placeholder="Image URL *" class="admin-input" />
-            <input type="text" id="gal-caption" placeholder="Caption (optional)" class="admin-input" />
-            <div id="gal-preview" class="hidden">
-              <img id="gal-preview-img" class="max-h-32 rounded-md border border-neutral-700" />
+        <button id="gal-show-form" class="w-full mb-4 px-4 py-3 rounded-lg border border-dashed border-neutral-700 text-neutral-400 text-sm hover:border-neutral-500 hover:text-neutral-200 transition-colors">
+          + Add image
+        </button>
+
+        <!-- Add image form (hidden by default) -->
+        <div id="gal-form-wrap" class="hidden mb-6">
+          <div class="bg-neutral-900 rounded-lg border border-neutral-800 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-neutral-200">Add image</h3>
+              <button id="gal-form-cancel" class="text-xs text-neutral-500 hover:text-neutral-300">Cancel</button>
             </div>
-            <button id="gal-add-btn" class="w-full px-4 py-2.5 rounded-full bg-neutral-100 text-neutral-950 font-semibold text-sm hover:bg-white transition-colors">
-              Add to gallery
-            </button>
+            <div class="space-y-3">
+              <label class="block w-full cursor-pointer">
+                <div id="gal-dropzone" class="border-2 border-dashed border-neutral-700 rounded-lg p-6 text-center hover:border-neutral-500 transition-colors">
+                  <div id="gal-dropzone-text">
+                    <p class="text-sm text-neutral-400">Tap to choose a photo</p>
+                    <p class="text-xs text-neutral-600 mt-1">or drag and drop</p>
+                  </div>
+                  <div id="gal-dropzone-preview" class="hidden">
+                    <img id="gal-preview-img" class="max-h-40 mx-auto rounded-md" />
+                    <p id="gal-file-name" class="text-xs text-neutral-500 mt-2"></p>
+                  </div>
+                </div>
+                <input type="file" id="gal-file" accept="image/*" class="hidden" />
+              </label>
+              <input type="text" id="gal-caption" placeholder="Caption" class="admin-input" />
+              <button id="gal-add-btn" class="w-full px-4 py-2.5 rounded-full bg-neutral-100 text-neutral-950 font-semibold text-sm hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Add to gallery
+              </button>
+              <p id="gal-upload-status" class="text-xs text-neutral-500 text-center hidden"></p>
+            </div>
           </div>
         </div>
 
-        <!-- Gallery grid -->
-        <div id="gallery-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+        <!-- Gallery list -->
+        <div id="gallery-list" class="space-y-3"></div>
       </div>
 
-      <!-- Status message -->
-      <div id="admin-status" class="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-sm font-medium bg-neutral-100 text-neutral-950 hidden transition-opacity"></div>
+      <!-- Toast -->
+      <div id="admin-status" class="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-sm font-medium bg-neutral-100 text-neutral-950 hidden"></div>
     </div>
   </section>
 </Layout>
@@ -111,23 +153,24 @@ import Layout from "../layouts/Layout.astro";
 </style>
 
 <script>
-  // --- Auth ---
+  // ── Auth ──
   const loginGate = document.getElementById("login-gate")!;
   const adminPanel = document.getElementById("admin-panel")!;
   const passwordInput = document.getElementById("password-input") as HTMLInputElement;
   const loginBtn = document.getElementById("login-btn")!;
   const loginError = document.getElementById("login-error")!;
-  const logoutBtn = document.getElementById("logout-btn")!;
 
   async function checkAuth() {
     const res = await fetch("/api/auth");
     const { authenticated } = await res.json();
-    if (authenticated) {
-      loginGate.classList.add("hidden");
-      adminPanel.classList.remove("hidden");
-      loadEvents();
-      loadGallery();
-    }
+    if (authenticated) { showAdmin(); }
+  }
+
+  function showAdmin() {
+    loginGate.classList.add("hidden");
+    adminPanel.classList.remove("hidden");
+    loadEvents();
+    loadGallery();
   }
 
   loginBtn.addEventListener("click", async () => {
@@ -136,49 +179,34 @@ import Layout from "../layouts/Layout.astro";
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: passwordInput.value }),
     });
-    if (res.ok) {
-      loginError.classList.add("hidden");
-      loginGate.classList.add("hidden");
-      adminPanel.classList.remove("hidden");
-      loadEvents();
-      loadGallery();
-    } else {
-      loginError.classList.remove("hidden");
-    }
+    if (res.ok) { loginError.classList.add("hidden"); showAdmin(); }
+    else { loginError.classList.remove("hidden"); }
   });
 
-  passwordInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") loginBtn.click();
-  });
+  passwordInput.addEventListener("keydown", (e) => { if (e.key === "Enter") loginBtn.click(); });
 
-  logoutBtn.addEventListener("click", () => {
+  document.getElementById("logout-btn")!.addEventListener("click", () => {
     document.cookie = "motif_admin=; Path=/; Max-Age=0";
     adminPanel.classList.add("hidden");
     loginGate.classList.remove("hidden");
     passwordInput.value = "";
   });
 
-  // --- Tabs ---
-  const tabs = document.querySelectorAll(".admin-tab");
-  tabs.forEach((tab) => {
+  // ── Tabs ──
+  document.querySelectorAll(".admin-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
       const target = (tab as HTMLElement).dataset.tab!;
-      tabs.forEach((t) => {
+      document.querySelectorAll(".admin-tab").forEach((t) => {
         const el = t as HTMLElement;
-        if (el.dataset.tab === target) {
-          el.classList.add("bg-neutral-100", "text-neutral-950");
-          el.classList.remove("text-neutral-400");
-        } else {
-          el.classList.remove("bg-neutral-100", "text-neutral-950");
-          el.classList.add("text-neutral-400");
-        }
+        el.classList.toggle("bg-neutral-100", el.dataset.tab === target);
+        el.classList.toggle("text-neutral-950", el.dataset.tab === target);
+        el.classList.toggle("text-neutral-400", el.dataset.tab !== target);
       });
       document.getElementById("tab-events")!.classList.toggle("hidden", target !== "events");
       document.getElementById("tab-gallery")!.classList.toggle("hidden", target !== "gallery");
     });
   });
 
-  // --- Status toast ---
   function showStatus(msg: string) {
     const el = document.getElementById("admin-status")!;
     el.textContent = msg;
@@ -186,49 +214,105 @@ import Layout from "../layouts/Layout.astro";
     setTimeout(() => el.classList.add("hidden"), 2500);
   }
 
-  // --- Events ---
-  const eventsListEl = document.getElementById("events-list")!;
+  // ══════════════════════════════════════
+  // ── EVENTS ──
+  // ══════════════════════════════════════
+
+  const evtFormWrap = document.getElementById("evt-form-wrap")!;
+  const evtShowForm = document.getElementById("evt-show-form")!;
+  const evtFormTitle = document.getElementById("evt-form-title")!;
+  const evtEditId = document.getElementById("evt-edit-id") as HTMLInputElement;
+  const evtSaveBtn = document.getElementById("evt-save-btn")!;
+  const evtFlyerInput = document.getElementById("evt-flyer") as HTMLInputElement;
+  const evtFlyerPreview = document.getElementById("evt-flyer-preview")!;
+  const evtFlyerImg = document.getElementById("evt-flyer-img") as HTMLImageElement;
+
+  const EVT_FIELDS = ["evt-title", "evt-date", "evt-time", "evt-venue", "evt-city", "evt-state", "evt-desc", "evt-ticket", "evt-flyer"];
+
+  function clearEvtForm() {
+    EVT_FIELDS.forEach((id) => { (document.getElementById(id) as HTMLInputElement).value = ""; });
+    evtEditId.value = "";
+    evtFormTitle.textContent = "New event";
+    evtSaveBtn.textContent = "Add event";
+    evtFlyerPreview.classList.add("hidden");
+  }
+
+  evtShowForm.addEventListener("click", () => {
+    clearEvtForm();
+    evtFormWrap.classList.remove("hidden");
+    evtShowForm.classList.add("hidden");
+    (document.getElementById("evt-title") as HTMLInputElement).focus();
+  });
+
+  document.getElementById("evt-form-cancel")!.addEventListener("click", () => {
+    evtFormWrap.classList.add("hidden");
+    evtShowForm.classList.remove("hidden");
+  });
+
+  evtFlyerInput.addEventListener("input", () => {
+    if (evtFlyerInput.value) {
+      evtFlyerImg.src = evtFlyerInput.value;
+      evtFlyerPreview.classList.remove("hidden");
+      evtFlyerImg.onerror = () => evtFlyerPreview.classList.add("hidden");
+    } else {
+      evtFlyerPreview.classList.add("hidden");
+    }
+  });
+
+  let eventsCache: any[] = [];
 
   async function loadEvents() {
     const res = await fetch("/api/events?all=1");
     const { events } = await res.json();
+    eventsCache = events;
+    document.getElementById("evt-count")!.textContent = events.length > 0 ? `(${events.length})` : "";
     renderEvents(events);
   }
 
   function renderEvents(events: any[]) {
+    const el = document.getElementById("events-list")!;
     if (events.length === 0) {
-      eventsListEl.innerHTML = `<p class="text-neutral-500 text-sm">No events yet.</p>`;
+      el.innerHTML = `<p class="text-neutral-500 text-sm py-8 text-center">No events yet. Add your first one above.</p>`;
       return;
     }
-    eventsListEl.innerHTML = events
-      .map((e: any) => {
-        const date = new Date(e.eventDate).toLocaleDateString("en-US", {
-          weekday: "short", month: "short", day: "numeric", year: "numeric",
-        });
-        return `
-          <div class="border border-neutral-800 rounded-lg p-4 ${!e.isPublic ? 'opacity-50' : ''}">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <div class="text-xs uppercase tracking-wider text-neutral-500">${date}</div>
-                <div class="mt-1 font-[Space_Grotesk,system-ui,sans-serif] text-lg font-bold truncate">${e.title}</div>
-                ${e.venue ? `<div class="text-sm text-neutral-400">${e.venue}${e.city ? `, ${e.city}` : ''}</div>` : ''}
+    el.innerHTML = events.map((e: any) => {
+      const date = new Date(e.eventDate + "T00:00:00").toLocaleDateString("en-US", {
+        weekday: "short", month: "short", day: "numeric", year: "numeric",
+      });
+      const time = e.startTime || "";
+      const isPast = new Date(e.eventDate + "T00:00:00") < new Date(new Date().toISOString().slice(0, 10) + "T00:00:00");
+
+      return `
+        <div class="border border-neutral-800 rounded-lg overflow-hidden ${isPast ? 'opacity-40' : ''} ${!e.isPublic ? 'border-dashed' : ''}">
+          <div class="p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs uppercase tracking-wider text-neutral-500">${date}${time ? ` · ${time}` : ''}${isPast ? ' · Past' : ''}</div>
+                <div class="mt-1 font-[Space_Grotesk,system-ui,sans-serif] text-lg font-bold">${e.title}</div>
+                ${e.venue ? `<div class="text-sm text-neutral-400 mt-0.5">${e.venue}${e.city ? `, ${e.city}` : ''}${e.state ? ` ${e.state}` : ''}</div>` : ''}
+                ${e.description ? `<div class="text-sm text-neutral-500 mt-2 line-clamp-2">${e.description}</div>` : ''}
+                ${e.ticketUrl ? `<a href="${e.ticketUrl}" target="_blank" rel="noopener" class="inline-block mt-2 text-xs text-neutral-300 underline underline-offset-2">Ticket link</a>` : ''}
               </div>
-              <div class="flex gap-1 shrink-0">
-                <button onclick="toggleEventPublic('${e.id}', ${!e.isPublic})" class="px-2 py-1 text-xs rounded-full ${e.isPublic ? 'bg-green-500/20 text-green-400' : 'bg-neutral-800 text-neutral-500'}">
-                  ${e.isPublic ? 'Public' : 'Hidden'}
-                </button>
-                <button onclick="deleteEvent('${e.id}')" class="px-2 py-1 text-xs rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20">
-                  Delete
-                </button>
-              </div>
+              ${e.flyerUrl ? `<img src="${e.flyerUrl}" class="w-16 h-16 rounded object-cover shrink-0" />` : ''}
             </div>
           </div>
-        `;
-      })
-      .join("");
+          <div class="flex border-t border-neutral-800 divide-x divide-neutral-800">
+            <button data-action="edit-event" data-id="${e.id}" class="flex-1 py-2.5 text-xs text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 transition-colors">
+              Edit
+            </button>
+            <button data-action="toggle-event" data-id="${e.id}" data-public="${!e.isPublic}" class="flex-1 py-2.5 text-xs transition-colors ${e.isPublic ? 'text-green-400 hover:bg-neutral-800/50' : 'text-neutral-500 hover:bg-neutral-800/50'}">
+              ${e.isPublic ? 'Public' : 'Hidden'}
+            </button>
+            <button data-action="delete-event" data-id="${e.id}" class="flex-1 py-2.5 text-xs text-red-400/60 hover:text-red-400 hover:bg-neutral-800/50 transition-colors">
+              Delete
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
-  document.getElementById("evt-add-btn")!.addEventListener("click", async () => {
+  evtSaveBtn.addEventListener("click", async () => {
     const title = (document.getElementById("evt-title") as HTMLInputElement).value.trim();
     const eventDate = (document.getElementById("evt-date") as HTMLInputElement).value;
     if (!title || !eventDate) return showStatus("Title and date are required");
@@ -246,123 +330,273 @@ import Layout from "../layouts/Layout.astro";
       isPublic: true,
     };
 
-    const res = await fetch("/api/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const editId = evtEditId.value;
+    let res;
+    if (editId) {
+      body.id = editId;
+      res = await fetch("/api/events", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    } else {
+      res = await fetch("/api/events", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    }
 
     if (res.ok) {
-      showStatus("Event added");
-      // Clear form
-      ["evt-title", "evt-date", "evt-time", "evt-venue", "evt-city", "evt-state", "evt-desc", "evt-ticket", "evt-flyer"].forEach((id) => {
-        (document.getElementById(id) as HTMLInputElement).value = "";
-      });
+      showStatus(editId ? "Event updated" : "Event added");
+      clearEvtForm();
+      evtFormWrap.classList.add("hidden");
+      evtShowForm.classList.remove("hidden");
       loadEvents();
     } else {
-      showStatus("Failed to add event");
+      showStatus("Something went wrong");
     }
   });
 
-  (window as any).toggleEventPublic = async (id: string, isPublic: boolean) => {
-    await fetch("/api/events", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, isPublic }),
-    });
-    loadEvents();
-  };
+  // Event delegation for event actions
+  document.getElementById("events-list")!.addEventListener("click", async (ev) => {
+    const btn = (ev.target as HTMLElement).closest("[data-action]") as HTMLElement;
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id!;
 
-  (window as any).deleteEvent = async (id: string) => {
-    await fetch(`/api/events?id=${id}`, { method: "DELETE" });
-    showStatus("Event deleted");
-    loadEvents();
-  };
+    if (action === "edit-event") {
+      const e = eventsCache.find((ev: any) => ev.id === id);
+      if (!e) return;
+      evtEditId.value = e.id;
+      (document.getElementById("evt-title") as HTMLInputElement).value = e.title || "";
+      (document.getElementById("evt-date") as HTMLInputElement).value = e.eventDate || "";
+      (document.getElementById("evt-time") as HTMLInputElement).value = e.startTime || "";
+      (document.getElementById("evt-venue") as HTMLInputElement).value = e.venue || "";
+      (document.getElementById("evt-city") as HTMLInputElement).value = e.city || "";
+      (document.getElementById("evt-state") as HTMLInputElement).value = e.state || "";
+      (document.getElementById("evt-desc") as HTMLTextAreaElement).value = e.description || "";
+      (document.getElementById("evt-ticket") as HTMLInputElement).value = e.ticketUrl || "";
+      (document.getElementById("evt-flyer") as HTMLInputElement).value = e.flyerUrl || "";
+      if (e.flyerUrl) {
+        evtFlyerImg.src = e.flyerUrl;
+        evtFlyerPreview.classList.remove("hidden");
+      }
+      evtFormTitle.textContent = "Edit event";
+      evtSaveBtn.textContent = "Save changes";
+      evtFormWrap.classList.remove("hidden");
+      evtShowForm.classList.add("hidden");
+      evtFormWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 
-  // --- Gallery ---
-  const galleryListEl = document.getElementById("gallery-list")!;
-  const galUrlInput = document.getElementById("gal-url") as HTMLInputElement;
-  const galPreview = document.getElementById("gal-preview")!;
+    if (action === "toggle-event") {
+      const isPublic = btn.dataset.public === "true";
+      // Update cache immediately, re-render, then persist
+      const idx = eventsCache.findIndex((ev: any) => ev.id === id);
+      if (idx >= 0) { eventsCache[idx].isPublic = isPublic; renderEvents(eventsCache); }
+      await fetch("/api/events", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, isPublic }) });
+    }
+
+    if (action === "delete-event") {
+      eventsCache = eventsCache.filter((ev: any) => ev.id !== id);
+      renderEvents(eventsCache);
+      document.getElementById("evt-count")!.textContent = eventsCache.length > 0 ? `(${eventsCache.length})` : "";
+      await fetch(`/api/events?id=${id}`, { method: "DELETE" });
+      showStatus("Event deleted");
+    }
+  });
+
+  // ══════════════════════════════════════
+  // ── GALLERY ──
+  // ══════════════════════════════════════
+
+  const galFormWrap = document.getElementById("gal-form-wrap")!;
+  const galShowForm = document.getElementById("gal-show-form")!;
+  const galFileInput = document.getElementById("gal-file") as HTMLInputElement;
+  const galDropzone = document.getElementById("gal-dropzone")!;
+  const galDropzoneText = document.getElementById("gal-dropzone-text")!;
+  const galDropzonePreview = document.getElementById("gal-dropzone-preview")!;
   const galPreviewImg = document.getElementById("gal-preview-img") as HTMLImageElement;
+  const galFileName = document.getElementById("gal-file-name")!;
+  const galAddBtn = document.getElementById("gal-add-btn") as HTMLButtonElement;
+  const galUploadStatus = document.getElementById("gal-upload-status")!;
 
-  galUrlInput.addEventListener("input", () => {
-    if (galUrlInput.value) {
-      galPreviewImg.src = galUrlInput.value;
-      galPreview.classList.remove("hidden");
-      galPreviewImg.onerror = () => galPreview.classList.add("hidden");
-    } else {
-      galPreview.classList.add("hidden");
-    }
+  let pendingFile: { data: string; contentType: string; name: string } | null = null;
+
+  galShowForm.addEventListener("click", () => {
+    galFormWrap.classList.remove("hidden");
+    galShowForm.classList.add("hidden");
   });
+
+  document.getElementById("gal-form-cancel")!.addEventListener("click", () => {
+    galFormWrap.classList.add("hidden");
+    galShowForm.classList.remove("hidden");
+    resetFileInput();
+  });
+
+  function resetFileInput() {
+    pendingFile = null;
+    galFileInput.value = "";
+    galDropzoneText.classList.remove("hidden");
+    galDropzonePreview.classList.add("hidden");
+    galAddBtn.disabled = true;
+    galUploadStatus.classList.add("hidden");
+  }
+
+  function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      showStatus("Please select an image file");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      showStatus("Image must be under 20MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      pendingFile = { data: base64, contentType: file.type, name: file.name };
+
+      galPreviewImg.src = reader.result as string;
+      galFileName.textContent = `${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+      galDropzoneText.classList.add("hidden");
+      galDropzonePreview.classList.remove("hidden");
+      galAddBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  galFileInput.addEventListener("change", () => {
+    if (galFileInput.files?.[0]) handleFile(galFileInput.files[0]);
+  });
+
+  // Drag and drop
+  galDropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    galDropzone.classList.add("border-neutral-400");
+  });
+  galDropzone.addEventListener("dragleave", () => {
+    galDropzone.classList.remove("border-neutral-400");
+  });
+  galDropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    galDropzone.classList.remove("border-neutral-400");
+    const file = (e as DragEvent).dataTransfer?.files[0];
+    if (file) handleFile(file);
+  });
+
+  let galleryCache: any[] = [];
 
   async function loadGallery() {
     const res = await fetch("/api/gallery?all=1");
     const { images } = await res.json();
+    galleryCache = images;
+    document.getElementById("gal-count")!.textContent = images.length > 0 ? `(${images.length})` : "";
     renderGallery(images);
   }
 
   function renderGallery(images: any[]) {
+    const el = document.getElementById("gallery-list")!;
     if (images.length === 0) {
-      galleryListEl.innerHTML = `<p class="col-span-full text-neutral-500 text-sm">No images yet.</p>`;
+      el.innerHTML = `<p class="text-neutral-500 text-sm py-8 text-center">No images yet. Add your first one above.</p>`;
       return;
     }
-    galleryListEl.innerHTML = images
-      .map((img: any) => `
-        <div class="relative group ${!img.isPublic ? 'opacity-50' : ''}">
-          <div class="aspect-square bg-neutral-900 rounded-md overflow-hidden">
-            <img src="${img.url}" alt="${img.alt || img.caption || ''}" class="w-full h-full object-cover" />
-          </div>
-          ${img.caption ? `<p class="mt-1 text-xs text-neutral-500 truncate">${img.caption}</p>` : ''}
-          <div class="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onclick="toggleGalleryPublic('${img.id}', ${!img.isPublic})" class="px-1.5 py-0.5 text-xs rounded bg-black/70 ${img.isPublic ? 'text-green-400' : 'text-neutral-400'}">
+    el.innerHTML = images.map((img: any, idx: number) => `
+      <div class="flex gap-3 items-start border border-neutral-800 rounded-lg p-3 ${!img.isPublic ? 'opacity-50 border-dashed' : ''}">
+        <img src="${img.url}" alt="${img.alt || img.caption || ''}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-cover shrink-0" />
+        <div class="flex-1 min-w-0">
+          <p class="text-sm text-neutral-200 truncate">${img.caption || img.alt || 'No caption'}</p>
+          <p class="text-xs text-neutral-500 truncate mt-0.5">${img.url}</p>
+          <div class="flex gap-1.5 mt-2 flex-wrap">
+            <button data-action="toggle-gallery" data-id="${img.id}" data-public="${!img.isPublic}" class="px-2.5 py-1 text-xs rounded-full font-medium transition-colors ${img.isPublic ? 'bg-green-500/20 text-green-400' : 'bg-neutral-800 text-neutral-500'}">
               ${img.isPublic ? 'Public' : 'Hidden'}
             </button>
-            <button onclick="deleteGalleryImage('${img.id}')" class="px-1.5 py-0.5 text-xs rounded bg-black/70 text-red-400">
-              &times;
+            ${idx > 0 ? `<button data-action="move-gallery" data-id="${img.id}" data-dir="up" class="px-2 py-1 text-xs rounded-full bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors">&uarr;</button>` : ''}
+            ${idx < images.length - 1 ? `<button data-action="move-gallery" data-id="${img.id}" data-dir="down" class="px-2 py-1 text-xs rounded-full bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors">&darr;</button>` : ''}
+            <button data-action="delete-gallery" data-id="${img.id}" class="px-2.5 py-1 text-xs rounded-full bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors">
+              Remove
             </button>
           </div>
         </div>
-      `)
-      .join("");
+      </div>
+    `).join("");
   }
 
-  document.getElementById("gal-add-btn")!.addEventListener("click", async () => {
-    const url = galUrlInput.value.trim();
-    if (!url) return showStatus("Image URL is required");
+  galAddBtn.addEventListener("click", async () => {
+    if (!pendingFile) return showStatus("Select an image first");
+
+    galAddBtn.disabled = true;
+    galUploadStatus.textContent = "Uploading...";
+    galUploadStatus.classList.remove("hidden");
 
     const caption = (document.getElementById("gal-caption") as HTMLInputElement).value.trim();
-    const res = await fetch("/api/gallery", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, caption, isPublic: true }),
-    });
 
-    if (res.ok) {
-      showStatus("Image added");
-      galUrlInput.value = "";
-      (document.getElementById("gal-caption") as HTMLInputElement).value = "";
-      galPreview.classList.add("hidden");
-      loadGallery();
-    } else {
-      showStatus("Failed to add image");
+    try {
+      const res = await fetch("/api/gallery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileData: pendingFile.data,
+          contentType: pendingFile.contentType,
+          fileName: pendingFile.name,
+          caption,
+          isPublic: true,
+        }),
+      });
+
+      if (res.ok) {
+        showStatus("Image added");
+        (document.getElementById("gal-caption") as HTMLInputElement).value = "";
+        resetFileInput();
+        galFormWrap.classList.add("hidden");
+        galShowForm.classList.remove("hidden");
+        loadGallery();
+      } else {
+        const data = await res.json().catch(() => null);
+        showStatus(data?.error || "Upload failed");
+        galAddBtn.disabled = false;
+      }
+    } catch {
+      showStatus("Upload failed");
+      galAddBtn.disabled = false;
+    }
+    galUploadStatus.classList.add("hidden");
+  });
+
+  // Event delegation for gallery actions
+  document.getElementById("gallery-list")!.addEventListener("click", async (ev) => {
+    const btn = (ev.target as HTMLElement).closest("[data-action]") as HTMLElement;
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id!;
+
+    if (action === "toggle-gallery") {
+      const isPublic = btn.dataset.public === "true";
+      const idx = galleryCache.findIndex((i: any) => i.id === id);
+      if (idx >= 0) { galleryCache[idx].isPublic = isPublic; renderGallery(galleryCache); }
+      await fetch("/api/gallery", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, isPublic }) });
+    }
+
+    if (action === "move-gallery") {
+      const direction = btn.dataset.dir as "up" | "down";
+      const idx = galleryCache.findIndex((i: any) => i.id === id);
+      if (idx < 0) return;
+      const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= galleryCache.length) return;
+      // Swap in cache immediately
+      const tmpSort = galleryCache[idx].sortOrder;
+      galleryCache[idx].sortOrder = galleryCache[swapIdx].sortOrder;
+      galleryCache[swapIdx].sortOrder = tmpSort;
+      galleryCache.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+      renderGallery(galleryCache);
+      await Promise.all([
+        fetch("/api/gallery", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: galleryCache.find((i: any) => i.id === id)!.id, sortOrder: galleryCache.find((i: any) => i.id === id)!.sortOrder }) }),
+        fetch("/api/gallery", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: galleryCache[galleryCache.findIndex((i: any) => i.id === id) === idx ? swapIdx : idx]?.id, sortOrder: galleryCache[galleryCache.findIndex((i: any) => i.id === id) === idx ? swapIdx : idx]?.sortOrder }) }),
+      ]);
+    }
+
+    if (action === "delete-gallery") {
+      galleryCache = galleryCache.filter((i: any) => i.id !== id);
+      renderGallery(galleryCache);
+      document.getElementById("gal-count")!.textContent = galleryCache.length > 0 ? `(${galleryCache.length})` : "";
+      await fetch(`/api/gallery?id=${id}`, { method: "DELETE" });
+      showStatus("Image removed");
     }
   });
 
-  (window as any).toggleGalleryPublic = async (id: string, isPublic: boolean) => {
-    await fetch("/api/gallery", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, isPublic }),
-    });
-    loadGallery();
-  };
-
-  (window as any).deleteGalleryImage = async (id: string) => {
-    await fetch(`/api/gallery?id=${id}`, { method: "DELETE" });
-    showStatus("Image removed");
-    loadGallery();
-  };
-
-  // --- Init ---
+  // ── Init ──
   checkAuth();
 </script>

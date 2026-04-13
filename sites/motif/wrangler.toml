@@ -1,3 +1,7 @@
 name = "motif"
 compatibility_date = "2026-04-12"
 pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "CONTENT"
+id = "d2cbed9f05524f52993a7456cea24e54"
