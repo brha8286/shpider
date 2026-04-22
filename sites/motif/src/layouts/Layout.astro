@@ -41,7 +41,9 @@ const isActive = (href: string) =>
     />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen bg-neutral-950 text-neutral-100 font-[Inter,system-ui,sans-serif] antialiased">
+  <body class="min-h-screen text-neutral-100 font-[Inter,system-ui,sans-serif] antialiased" style="background-color:#0a0a0a; background-image: url('/customer-assets/double%20sprout%20and%20system%20png.png'); background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;">
+    <div class="fixed inset-0 bg-neutral-950/70 pointer-events-none" style="z-index:0;"></div>
+    <div class="relative" style="z-index:1;">
     <header class="pt-10 sm:pt-14 pb-4 px-4">
       <a href="/" class="block text-center group">
         <h1 class="font-[Space_Grotesk,system-ui,sans-serif] text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none">
@@ -96,5 +98,6 @@ const isActive = (href: string) =>
         scrollbar-width: none;
       }
     </style>
+    </div>
   </body>
 </html>
