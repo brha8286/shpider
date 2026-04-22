@@ -5,10 +5,115 @@ import Layout from "../layouts/Layout.astro";
 <Layout title="About — Motif Movement">
   <section class="pt-10 sm:pt-14">
     <h2 class="font-[Space_Grotesk,system-ui,sans-serif] text-3xl sm:text-4xl font-bold">About</h2>
-    <div class="mt-6 space-y-6 text-neutral-300 leading-relaxed">
-      <p>This is where your story goes — how the collective came together, what you're about, what makes Motif different. A few sentences to a couple paragraphs.</p>
-      <h3 class="font-[Space_Grotesk,system-ui,sans-serif] text-2xl font-bold pt-4">The System</h3>
-      <p>Tell us about the rig. Specs, build history, what it sounds like, what makes it yours. People want to know what's hitting them.</p>
+    <div class="mt-6 space-y-5 text-neutral-300 leading-relaxed text-base sm:text-lg">
+      <p>
+        The Motif Movement is a bass collective by the people, of the people, for the people. We formed to
+        create a safe, high quality, and immersive space for all walks of life to listen to the bone shaking
+        music that brought us all together. We take pride in our high fidelity Paraflex system, one of the
+        best sounding rigs in West Texas. Regardless of if it's a warehouse show, a full venue, or a
+        soundcamp at a festival we aim to provide a top level experience that is guaranteed to have you shake
+        a tail feather.
+      </p>
+      <p>
+        Our roster is comprised of some of the best artists in the 806, and we are excited for the
+        opportunity to share that art with all of you!
+      </p>
+      <p>
+        Producer/DJs such as <strong class="text-neutral-100">Big-A</strong>,{" "}
+        <strong class="text-neutral-100">Bass Slave</strong>, and{" "}
+        <strong class="text-neutral-100">Mask</strong> help push our scene forward with their original music,
+        uniquely crafted sets, and thoughtful sonic innovations.
+      </p>
+      <p>
+        Visual artists such as <strong class="text-neutral-100">Lucid_Vision</strong> and{" "}
+        <strong class="text-neutral-100">Ne0n Croissant</strong> help bring the show to life with immersive
+        and interactive visuals, stage design, lights, lasers...and a fair amount of pixie dust.
+      </p>
+    </div>
+
+    <h3 class="font-[Space_Grotesk,system-ui,sans-serif] text-2xl sm:text-3xl font-bold pt-12 mt-4">
+      The Paraflex System
+    </h3>
+
+    <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="aspect-[4/3] bg-neutral-900 rounded-lg overflow-hidden">
+        <img
+          src="/customer-assets/Paraflex%20system%20pics/1000020264.jpg"
+          alt="Motif Paraflex rig"
+          loading="lazy"
+          class="w-full h-full object-cover"
+        />
+      </div>
+      <div class="aspect-[4/3] bg-neutral-900 rounded-lg overflow-hidden">
+        <img
+          src="/customer-assets/Paraflex%20system%20pics/L%20stack.jpg"
+          alt="L-stack configuration"
+          loading="lazy"
+          class="w-full h-full object-cover"
+        />
+      </div>
+      <div class="aspect-[4/3] bg-neutral-900 rounded-lg overflow-hidden">
+        <img
+          src="/customer-assets/Paraflex%20system%20pics/Single%20stack%20flex.jpg"
+          alt="Single stack flex"
+          loading="lazy"
+          class="w-full h-full object-cover"
+        />
+      </div>
+    </div>
+
+    <div class="mt-8 space-y-5 text-neutral-300 leading-relaxed text-base sm:text-lg">
+      <p>
+        High quality sound is always our number one priority and comes before anything else that we do. We
+        knew we wanted something unique and powerful, but also portable enough to be able to share our sound
+        with surrounding areas as we continue to grow. For our system owners (Caleb, Carson, and Jesse),
+        bone-shaking bass is a non-negotiable requirement — but not at the expense of surgical imaging and
+        technical accuracy in the high end.
+      </p>
+      <p>
+        To ensure we retained maximum bass without sacrificing high end fidelity, we turned to{" "}
+        <strong class="text-neutral-100">WAAT Audio</strong>, a leader in the paraflex construction and
+        distribution space. We then expanded on our initial investment and eventually pieced together a
+        powerhouse of a rig that was built, tested, and tuned by the professionals at WAAT. For every new
+        deployment our sound engineers tune and dial in the rig so that we provide sound that can be felt
+        deep in your chest WITHOUT blowing out your eardrums.
+      </p>
+    </div>
+
+    <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="bg-neutral-900 rounded-lg p-5">
+        <h4 class="font-[Space_Grotesk,system-ui,sans-serif] text-lg font-bold text-neutral-100 mb-3">
+          Subwoofers
+        </h4>
+        <ul class="text-sm text-neutral-400 space-y-1.5">
+          <li><span class="text-neutral-200">(4)</span> Paraflex 21 ELF Subwoofers</li>
+          <li><span class="text-neutral-200">Driver:</span> B&C 21SW152-4 (4-ohm)</li>
+          <li><span class="text-neutral-200">Power:</span> 2000W AES</li>
+          <li><span class="text-neutral-200">Voice coil:</span> 4.5", neodymium motor</li>
+          <li class="text-neutral-500 text-xs pt-1">Extended Low Frequency 6th-order bandpass</li>
+        </ul>
+      </div>
+      <div class="bg-neutral-900 rounded-lg p-5">
+        <h4 class="font-[Space_Grotesk,system-ui,sans-serif] text-lg font-bold text-neutral-100 mb-3">
+          Mid-Bass / Kick
+        </h4>
+        <ul class="text-sm text-neutral-400 space-y-1.5">
+          <li><span class="text-neutral-200">(2)</span> Paraflex C2D "Kicktops" (C3D112)</li>
+          <li><span class="text-neutral-200">Driver:</span> HOQS N123 Neo 12"</li>
+          <li class="text-neutral-500 text-xs pt-1">High-sensitivity neodymium, horn-loaded</li>
+        </ul>
+      </div>
+      <div class="bg-neutral-900 rounded-lg p-5">
+        <h4 class="font-[Space_Grotesk,system-ui,sans-serif] text-lg font-bold text-neutral-100 mb-3">
+          High Frequency
+        </h4>
+        <ul class="text-sm text-neutral-400 space-y-1.5">
+          <li><span class="text-neutral-200">(2)</span> BH1 60° × 40° CD horns</li>
+          <li><span class="text-neutral-200">Driver:</span> HF143N 1.4" exit</li>
+          <li><span class="text-neutral-200">Magnet:</span> Neodymium, 3" voice coil</li>
+          <li class="text-neutral-500 text-xs pt-1">Clean output above crossover</li>
+        </ul>
+      </div>
     </div>
   </section>
 </Layout>

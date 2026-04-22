@@ -1,0 +1,25 @@
+The Motif Paraflex System:
+High quality sound is always our number 1 priority and comes before anything else that we do. We knew we wanted something unique and powerful, but also portable enough to be able to share our sound with surronding areas as we continue to grow. For our system owners (Caleb, Carson, and Jesse), bone-shaking bass is a non-negotiable requirement, but not at the expense of surgical imaging and technical accuracy in the high end. To ensure we retained maximum bass without sacrificing high end fidelity.. we turned to WAAT Audio, a leader in the paraflex contruction and distribution space. We then expanded on our initial investment (to the joy of our team but dismay of our wallets) and eventualy pieced together a powerhouse of a rig that was built, tested and tuned by the professionals at WAAT. Our system is now comprised of 4 Paraflex ~Naughty~ ELF Subwoofers, 2 C2D "Kicktops" (C3D112), and 2 BH1 60° x 40° horns. For every new deployment our sound engineers tune and dial in the rig so that we provide sound that can be felt deep in your chest WITHOUT blowing out your eardrums. This beast puts a smile on our face every single time we break it out, and we cant wait to see the bass face it stamps on our little community. If you haven't heard it yet..you will. ;)  
+
+Subs:
+Enclosures: (4) Paraflex 21 ELF Subwoofers.
+
+Drivers: B&C 21SW152-4 (4-ohm).
+
+Specs: 2000W AES power handling, 4.5" voice coil, Neodymium motor.
+
+Enclosure Tuning: Optimized for extreme low-end extension (ELF - Extended Low Frequency) utilizing the compound horn / 6th-order bandpass characteristics of the Paraflex design.
+
+Mid-Bass / Kick Section
+Enclosures: Paraflex C2D "Kicktops" (C3D112).
+
+Drivers: HOQS N123 Neo 12-inch drivers.
+
+Specs: High-sensitivity neodymium drivers designed specifically for high-impact transient response in horn-loaded enclosures.
+
+High-Frequency Section
+Horns: BH1 60° x 40° constant directivity horns.
+
+Compression Drivers: HF143N 1.4-inch exit high-frequency drivers.
+
+Specs: Neodymium magnet, 3" voice coil, high-power handling for clean output above the crossover point.
