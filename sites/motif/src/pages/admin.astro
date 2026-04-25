@@ -413,7 +413,7 @@ import Layout from "../layouts/Layout.astro";
   const galAddBtn = document.getElementById("gal-add-btn") as HTMLButtonElement;
   const galUploadStatus = document.getElementById("gal-upload-status")!;
 
-  let pendingFile: { data: string; contentType: string; name: string } | null = null;
+  let pendingFile: { data: string; contentType: string; name: string; thumbData?: string; thumbContentType?: string } | null = null;
 
   galShowForm.addEventListener("click", () => {
     galFormWrap.classList.remove("hidden");
@@ -435,6 +435,22 @@ import Layout from "../layouts/Layout.astro";
     galUploadStatus.classList.add("hidden");
   }
 
+  function makeThumbnail(dataUrl: string): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX_W = 400;
+        const scale = img.width > MAX_W ? MAX_W / img.width : 1;
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.7).split(",")[1]);
+      };
+      img.src = dataUrl;
+    });
+  }
+
   function handleFile(file: File) {
     if (!file.type.startsWith("image/")) {
       showStatus("Please select an image file");
@@ -446,11 +462,14 @@ import Layout from "../layouts/Layout.astro";
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = (reader.result as string).split(",")[1];
-      pendingFile = { data: base64, contentType: file.type, name: file.name };
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      const base64 = dataUrl.split(",")[1];
+      const thumbData = await makeThumbnail(dataUrl);
 
-      galPreviewImg.src = reader.result as string;
+      pendingFile = { data: base64, contentType: file.type, name: file.name, thumbData, thumbContentType: "image/jpeg" };
+
+      galPreviewImg.src = dataUrl;
       galFileName.textContent = `${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
       galDropzoneText.classList.add("hidden");
       galDropzonePreview.classList.remove("hidden");
@@ -496,7 +515,7 @@ import Layout from "../layouts/Layout.astro";
     }
     el.innerHTML = images.map((img: any, idx: number) => `
       <div class="flex gap-3 items-start border border-neutral-800 rounded-lg p-3 ${!img.isPublic ? 'opacity-50 border-dashed' : ''}">
-        <img src="${img.url}" alt="${img.alt || img.caption || ''}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-cover shrink-0" />
+        <img src="${img.thumbUrl || img.url}" alt="${img.alt || img.caption || ''}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-cover shrink-0" />
         <div class="flex-1 min-w-0">
           <p class="text-sm text-neutral-200 truncate">${img.caption || img.alt || 'No caption'}</p>
           <p class="text-xs text-neutral-500 truncate mt-0.5">${img.url}</p>
@@ -532,6 +551,8 @@ import Layout from "../layouts/Layout.astro";
           fileData: pendingFile.data,
           contentType: pendingFile.contentType,
           fileName: pendingFile.name,
+          thumbData: pendingFile.thumbData,
+          thumbContentType: pendingFile.thumbContentType,
           caption,
           isPublic: true,
         }),

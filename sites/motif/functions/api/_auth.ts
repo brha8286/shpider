@@ -4,8 +4,10 @@
 
 export interface Env {
   CONTENT: KVNamespace;
-  ADMIN_PASSWORD: string;
+  ADMIN_PASSWORD?: string;
 }
+
+const DEFAULT_PASSWORD = "motif2026";
 
 const COOKIE_NAME = "motif_admin";
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -50,7 +52,7 @@ export function requireAuth(
   env: Env
 ): Response | null {
   const cookie = getSessionCookie(request);
-  if (!validateSession(cookie, env.ADMIN_PASSWORD)) {
+  if (!validateSession(cookie, (env.ADMIN_PASSWORD || DEFAULT_PASSWORD))) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },

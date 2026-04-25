@@ -50,7 +50,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   return new Response(JSON.stringify({ events }), {
-    headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=30" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 };
 

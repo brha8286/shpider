@@ -1,74 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
-
-const galleryImages = [
-  "IMG_20260420_18521884.jpeg",
-  "IMG_20260420_18541842.jpeg",
-  "IMG_20260420_18545249.jpeg",
-  "IMG_20260420_18550616.jpeg",
-  "IMG_20260420_18551165.jpeg",
-  "IMG_20260420_18553127.jpeg",
-  "IMG_20260420_18554640.jpeg",
-  "IMG_20260420_18563707.jpeg",
-  "IMG_20260420_18570287.jpeg",
-  "IMG_20260420_18581135.jpeg",
-  "IMG_20260420_18590128.jpeg",
-  "IMG_20260420_19042889.jpeg",
-  "IMG_20260420_19071483.jpeg",
-  "IMG_20260420_19081598.jpeg",
-  "IMG_20260420_19093562.jpeg",
-  "IMG_20260420_19094738.jpeg",
-  "IMG_20260420_19111358.jpeg",
-  "IMG_20260420_19121465.jpeg",
-  "IMG_20260420_19122599.jpeg",
-  "IMG_20260420_19124920.jpeg",
-  "IMG_20260420_19133702.jpeg",
-  "IMG_20260420_19152155.jpeg",
-  "IMG_20260420_19154388.jpeg",
-  "IMG_20260420_19155131.jpeg",
-  "IMG_20260420_19155374.jpeg",
-  "IMG_20260420_19160741.jpeg",
-  "IMG_20260420_19162009.jpeg",
-  "Screenshot_2026-04-20-18-50-03-37_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-18-50-17-98_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-18-54-06-02_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-18-58-46-45_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-18-59-34-93_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-01-01-71_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-01-13-51_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-01-58-42_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-02-24-39_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-07-45-04_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-08-34-49_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-08-53-94_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-13-11-05_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-13-19-23_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-14-54-95_92460851df6f172a4592fca41cc2d2e6.jpg",
-  "Screenshot_2026-04-20-19-15-01-16_92460851df6f172a4592fca41cc2d2e6.jpg",
-];
+import GalleryGrid from "../components/GalleryGrid.astro";
 ---
 
 <Layout title="Gallery — Motif Movement">
   <section class="pt-10 sm:pt-14">
     <h2 class="font-[Space_Grotesk,system-ui,sans-serif] text-3xl sm:text-4xl font-bold">Gallery</h2>
-    <div class="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-2">
-      {galleryImages.map((img) => (
-        <a
-          href={`/customer-assets/Gallery/${img}`}
-          target="_blank"
-          rel="noopener"
-          class="block group"
-        >
-          <div class="aspect-square bg-neutral-900 rounded-md overflow-hidden">
-            <img
-              src={`/customer-assets/Gallery/${img}`}
-              alt=""
-              loading="lazy"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-        </a>
-      ))}
+    <div class="mt-8">
+      <GalleryGrid />
     </div>
   </section>
 </Layout>

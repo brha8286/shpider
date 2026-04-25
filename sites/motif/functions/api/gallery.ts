@@ -3,6 +3,7 @@ import { Env, requireAuth } from "./_auth";
 interface GalleryItem {
   id: string;
   url: string;
+  thumbUrl?: string;
   alt: string;
   caption: string;
   sortOrder: number;
@@ -41,7 +42,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   images = images.sort((a, b) => a.sortOrder - b.sortOrder);
 
   return new Response(JSON.stringify({ images }), {
-    headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=30" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 };
 
@@ -56,24 +57,30 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     fileData?: string;
     contentType?: string;
     fileName?: string;
+    thumbData?: string;
+    thumbContentType?: string;
   };
 
   let url: string;
+  let thumbUrl: string | undefined;
 
   if (body.fileData && body.contentType) {
     // File upload — decode base64 and store in KV
     const id = crypto.randomUUID();
-    const binaryStr = atob(body.fileData);
-    const bytes = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i);
-    }
 
-    await env.CONTENT.put(`image:${id}`, bytes.buffer, {
+    const fullBytes = new Uint8Array(atob(body.fileData).split("").map((c) => c.charCodeAt(0)));
+    await env.CONTENT.put(`image:${id}`, fullBytes.buffer, {
       metadata: { contentType: body.contentType },
     });
-
     url = `/api/image/${id}`;
+
+    if (body.thumbData && body.thumbContentType) {
+      const thumbBytes = new Uint8Array(atob(body.thumbData).split("").map((c) => c.charCodeAt(0)));
+      await env.CONTENT.put(`image:${id}-thumb`, thumbBytes.buffer, {
+        metadata: { contentType: body.thumbContentType },
+      });
+      thumbUrl = `/api/image/${id}-thumb`;
+    }
   } else if (body.url) {
     url = body.url;
   } else {
@@ -89,6 +96,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const item: GalleryItem = {
     id: crypto.randomUUID(),
     url,
+    ...(thumbUrl ? { thumbUrl } : {}),
     alt: body.alt ?? "",
     caption: body.caption ?? "",
     sortOrder: maxSort + 1,
@@ -110,7 +118,11 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
   const denied = requireAuth(request, env);
   if (denied) return denied;
 
-  const body = (await request.json()) as Partial<GalleryItem> & { id: string };
+  const body = (await request.json()) as Partial<GalleryItem> & {
+    id: string;
+    thumbData?: string;
+    thumbContentType?: string;
+  };
   if (!body.id) {
     return new Response(
       JSON.stringify({ error: "id is required" }),
@@ -126,6 +138,17 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       { status: 404, headers: { "Content-Type": "application/json" } }
     );
   }
+
+  // If thumbData is included, store the thumbnail in KV and set thumbUrl
+  if (body.thumbData && body.thumbContentType) {
+    const thumbBytes = new Uint8Array(atob(body.thumbData).split("").map((c) => c.charCodeAt(0)));
+    await env.CONTENT.put(`image:${body.id}-thumb`, thumbBytes.buffer, {
+      metadata: { contentType: body.thumbContentType },
+    });
+    body.thumbUrl = `/api/image/${body.id}-thumb`;
+  }
+  delete (body as any).thumbData;
+  delete (body as any).thumbContentType;
 
   images[idx] = { ...images[idx], ...body };
   await setGallery(env, images);

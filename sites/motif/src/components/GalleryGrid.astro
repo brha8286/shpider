@@ -41,11 +41,9 @@
               <a href="${img.url}" target="_blank" rel="noopener" class="block group">
                 <div class="aspect-square bg-neutral-900 rounded-md overflow-hidden">
                   <img
-                    src="${img.url}"
+                    src="${img.thumbUrl || img.url}"
                     alt="${altText}"
                     loading="lazy"
-                    ${img.width ? `width="${img.width}"` : ""}
-                    ${img.height ? `height="${img.height}"` : ""}
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
