@@ -43,18 +43,37 @@ rm -rf sites/<slug>/node_modules sites/<slug>/dist sites/<slug>/.astro sites/<sl
 - `site` → `https://<domain>`
 
 **`sites/<slug>/.env`**
-- `PUBLIC_API_URL` → the customer's venyou public API URL (e.g. `https://<slug>.venyou.app/api/public`). If the venyou URL is not known yet, set to a placeholder and note it in the done criteria as needing configuration.
+- `PUBLIC_API_URL` → the customer's venyou public API URL (e.g. `https://<slug>.venyou.app/api/public`). If not known yet, set to a placeholder and flag it in done criteria.
 
 **`sites/<slug>/src/layouts/Layout.astro`**
 - Wordmark text (currently `MOTIF`) → `<display_name>`
 - Subtitle (currently `Lubbock · Texas`) → `<location>`
 - `<title>` element → `<display_name>`
 
+**`sites/<slug>/wrangler.toml`**
+- `name` → `<slug>`
+- `[[kv_namespaces]] id` → placeholder `"REPLACE_WITH_NEW_KV_NAMESPACE_ID"` (the motif namespace must never be shared). Flag this in done criteria — the user must create a new KV namespace in the CF dashboard and paste the ID here before deploying.
+
+**`sites/<slug>/functions/api/_auth.ts`**
+- `DEFAULT_PASSWORD` → `"<slug>change-me"` (forces the user to set `ADMIN_PASSWORD` in CF Pages env before handing to client)
+- `COOKIE_NAME` → `"<slug>_admin"`
+
 ### 4. Favicon
 
 Rewrite `sites/<slug>/public/favicon.svg` as the first letter of `<display_name>` on the same dark background used in `sites/motif`. Keep the file format and dimensions identical — only change the glyph.
 
-### 5. Strip placeholder copy
+### 5. Clear customer assets
+
+Remove Motif-specific media from the cloned site — it must not ship to a different client:
+
+```sh
+rm -rf sites/<slug>/public/customer-assets
+mkdir sites/<slug>/public/customer-assets
+```
+
+The admin UI and gallery page fetch from KV at runtime, so no placeholder images are needed. The `about.astro` Paraflex image references will break — that's intentional; they'll be replaced when the new client provides assets.
+
+### 6. Strip placeholder copy
 
 For every file under `sites/<slug>/src/pages/`:
 
@@ -64,7 +83,7 @@ For every file under `sites/<slug>/src/pages/`:
 
 Example: `<h2>Sound. Movement. Lubbock.</h2>` becomes `<h2>TODO: hero headline</h2>`.
 
-### 6. Verify build
+### 7. Verify build
 
 ```sh
 cd sites/<slug> && npm install && npm run build
@@ -79,7 +98,11 @@ Report to the caller:
 1. Path to new site directory
 2. Build output summary (page count, build time — pull from Astro's output)
 3. List of files that still contain `TODO:` markers (grep for them)
-4. Literal next step: "Collect assets from the client, then run `dns-migration-auditor <domain> <slug>` before touching Cloudflare."
+4. Checklist of manual steps required before the site can go live:
+   - [ ] Create a new KV namespace in CF dashboard → paste ID into `wrangler.toml`
+   - [ ] Set `ADMIN_PASSWORD` env var in CF Pages (Production + Preview) — never use the `change-me` default in prod
+   - [ ] Upload customer assets and populate KV via the admin UI at `/admin`
+5. Literal next step: "Collect assets from the client, then run `dns-migration-auditor <domain> <slug>` before touching Cloudflare."
 
 ## Hard rules
 

@@ -7,9 +7,9 @@ export interface Env {
   ADMIN_PASSWORD?: string;
 }
 
-const DEFAULT_PASSWORD = "motif2026";
-
-const COOKIE_NAME = "motif_admin";
+// SCAFFOLD: update both values when copying to a new customer site
+const DEFAULT_PASSWORD = "motif2026"; // fallback if ADMIN_PASSWORD env var not set
+const COOKIE_NAME = "motif_admin";    // use <slug>_admin for each new customer
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function makeSessionToken(password: string): string {

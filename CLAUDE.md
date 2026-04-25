@@ -67,24 +67,32 @@ npm run deploy        # build + wrangler pages deploy (requires wrangler login)
 
 There is no repo-root `package.json`, no shared lint/test config, and no CI yet. Add those only when a second or third site starts sharing real code.
 
-### Dynamic content: events + gallery
+### Content admin: events + gallery
 
-Customer sites fetch events and gallery data **client-side** from their venyou instance's public API. This means customers can update their own events and photos without any code changes or rebuilds.
+Each customer site ships a self-contained content admin at `/admin`. It is password-protected and backed entirely by **Cloudflare KV** — no external service required. Customers log in and manage their own events and gallery photos without any code changes or rebuilds.
 
-Each customer site has a `.env` file with `PUBLIC_API_URL` pointing at their venyou instance's public API (e.g. `https://motif.venyou.app/api/public`). Astro inlines this at build time via `import.meta.env.PUBLIC_API_URL`.
+**How it works:**
+- `functions/api/events.ts` — CRUD for events stored in KV under key `"events"`
+- `functions/api/gallery.ts` — CRUD for gallery items; uploaded images stored as binary blobs under `image:<uuid>`, thumbnails under `image:<uuid>-thumb`
+- `functions/api/image/[id].ts` — serves binary images from KV with immutable cache headers
+- `functions/api/auth.ts` + `functions/api/_auth.ts` — cookie-based auth; password set via `ADMIN_PASSWORD` env var in CF Pages
+- `src/pages/admin.astro` — the admin UI (events + gallery tabs, image upload with client-side thumbnail generation)
+- `src/components/EventList.astro` — fetches `GET /api/events`, renders upcoming public events with skeleton loading
+- `src/components/GalleryGrid.astro` — fetches `GET /api/gallery`, renders public gallery images (uses `thumbUrl` for display, links to full-res)
 
-Two Astro components handle the fetching:
-- `src/components/EventList.astro` — fetches `GET /events`, renders upcoming public events
-- `src/components/GalleryGrid.astro` — fetches `GET /gallery`, renders published gallery images
+**Customer-specific constants (must update per site):**
+- `functions/api/_auth.ts`: `COOKIE_NAME` → `<slug>_admin`, `DEFAULT_PASSWORD` → placeholder
+- `wrangler.toml`: `name` and `[[kv_namespaces]] id` — each customer needs their own KV namespace
+- CF Pages env vars: `ADMIN_PASSWORD` set for both Production and Preview environments
 
-Both render loading skeletons server-side and replace them with live data on page load. If the API is unreachable or returns empty, they silently show an empty state — no errors on the public site.
-
-The venyou-side public API lives at `src/app/api/public/{events,gallery}/route.ts` — read-only, rate-limited, CORS-restricted to the customer's domain. Customers toggle events and gallery items as public via the venyou admin dashboard.
+**Bulk upload utility:** `scripts/upload-gallery.mjs` — uploads local images to KV via the admin API. `scripts/generate-thumbs.mjs` — retroactively generates thumbnails for existing gallery items (requires `npm install sharp` at repo root).
 
 ## When adding a new customer
 
-1. `cp -r sites/motif sites/<new-customer>` and strip placeholder copy.
-2. Update `astro.config.mjs` `site:` URL and `package.json` `name` + `deploy` project name.
-3. Set `PUBLIC_API_URL` in `sites/<new-customer>/.env` to the customer's venyou public API URL.
-4. `dig` the customer's current domain to inventory existing records **before** touching Cloudflare. Note MX, TXT (SPF/DKIM/DMARC), and any CNAMEs for mail services (autodiscover, selector._domainkey, etc.).
-5. Follow the 4-phase migration pattern above. Do not skip the preview-subdomain step — it's what lets the client approve the new site without any downtime risk to their current one.
+Use the `customer-site-scaffolder` agent — it handles steps 1–3 mechanically. Manual steps after scaffolding:
+
+1. **Scaffold:** run `customer-site-scaffolder` with slug, domain, display name, location.
+2. **KV namespace:** create a new namespace in CF dashboard → Workers & Pages → KV. Paste the ID into `sites/<slug>/wrangler.toml`.
+3. **Admin password:** set `ADMIN_PASSWORD` in CF Pages → Settings → Environment Variables for both Production and Preview. Never ship the `change-me` default to a client.
+4. **DNS inventory:** `dig` the customer's current domain before touching Cloudflare. Note MX, TXT (SPF/DKIM/DMARC), and any CNAMEs for mail services.
+5. **Migration:** follow the 4-phase pattern above. Do not skip the preview-subdomain step.
