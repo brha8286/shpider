@@ -57,11 +57,26 @@
               if (e.state) venue += ` ${e.state}`;
             }
             const ticketLink = e.ticketUrl
-              ? `<a href="${e.ticketUrl}" target="_blank" rel="noopener" class="mt-2 inline-block text-sm text-neutral-100 underline underline-offset-2 hover:text-white">Tickets</a>`
+              ? `<a href="${e.ticketUrl}" target="_blank" rel="noopener" class="mt-4 inline-block px-5 py-2 rounded-full border border-neutral-600 text-sm text-neutral-100 hover:border-neutral-400 hover:text-white transition-colors">Get tickets</a>`
               : "";
 
+            if (e.flyerUrl) {
+              return `
+                <li class="border border-neutral-900 rounded-xl overflow-hidden hover:border-neutral-700 transition-colors list-none">
+                  <img src="${e.flyerUrl}" alt="Flyer for ${e.title}" class="w-full object-cover" style="max-height:480px" loading="lazy" />
+                  <div class="p-5">
+                    <div class="text-xs uppercase tracking-wider text-neutral-500">${formatted}${time ? ` · ${time}` : ""}</div>
+                    <div class="mt-1 font-[Space_Grotesk,system-ui,sans-serif] text-2xl font-bold">${e.title}</div>
+                    ${venue ? `<div class="mt-1 text-sm text-neutral-400">${venue}</div>` : ""}
+                    ${e.description ? `<div class="mt-2 text-sm text-neutral-400">${e.description}</div>` : ""}
+                    ${ticketLink}
+                  </div>
+                </li>
+              `;
+            }
+
             return `
-              <li class="border border-neutral-900 rounded-lg p-5 hover:border-neutral-700 transition-colors list-none">
+              <li class="border border-neutral-900 rounded-xl p-5 hover:border-neutral-700 transition-colors list-none">
                 <div class="text-xs uppercase tracking-wider text-neutral-500">${formatted}${time ? ` · ${time}` : ""}</div>
                 <div class="mt-1 font-[Space_Grotesk,system-ui,sans-serif] text-xl font-bold">${e.title}</div>
                 ${venue ? `<div class="mt-1 text-sm text-neutral-400">${venue}</div>` : ""}

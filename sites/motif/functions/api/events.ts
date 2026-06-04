@@ -54,18 +54,33 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   });
 };
 
+async function storeFlyerFile(env: Env, fileData: string, contentType: string): Promise<string> {
+  const id = crypto.randomUUID();
+  const bytes = new Uint8Array(atob(fileData).split("").map((c) => c.charCodeAt(0)));
+  await env.CONTENT.put(`image:${id}`, bytes.buffer, { metadata: { contentType } });
+  return `/api/image/${id}`;
+}
+
 // POST /api/events — admin only, create a new event
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const denied = requireAuth(request, env);
   if (denied) return denied;
 
-  const body = (await request.json()) as Partial<EventItem>;
+  const body = (await request.json()) as Partial<EventItem> & {
+    flyerFileData?: string;
+    flyerContentType?: string;
+  };
   if (!body.title || !body.eventDate) {
     return new Response(
       JSON.stringify({ error: "title and eventDate are required" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
+  }
+
+  let flyerUrl = body.flyerUrl ?? "";
+  if (body.flyerFileData && body.flyerContentType) {
+    flyerUrl = await storeFlyerFile(env, body.flyerFileData, body.flyerContentType);
   }
 
   const events = await getEvents(env);
@@ -77,7 +92,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     startTime: body.startTime ?? "",
     endTime: body.endTime ?? "",
     ticketUrl: body.ticketUrl ?? "",
-    flyerUrl: body.flyerUrl ?? "",
+    flyerUrl,
     venue: body.venue ?? "",
     city: body.city ?? "",
     state: body.state ?? "",
@@ -99,13 +114,23 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
   const denied = requireAuth(request, env);
   if (denied) return denied;
 
-  const body = (await request.json()) as Partial<EventItem> & { id: string };
+  const body = (await request.json()) as Partial<EventItem> & {
+    id: string;
+    flyerFileData?: string;
+    flyerContentType?: string;
+  };
   if (!body.id) {
     return new Response(
       JSON.stringify({ error: "id is required" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
+
+  if (body.flyerFileData && body.flyerContentType) {
+    body.flyerUrl = await storeFlyerFile(env, body.flyerFileData, body.flyerContentType);
+  }
+  delete (body as any).flyerFileData;
+  delete (body as any).flyerContentType;
 
   const events = await getEvents(env);
   const idx = events.findIndex((e) => e.id === body.id);
