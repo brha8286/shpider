@@ -5,3 +5,7 @@ pages_build_output_dir = "dist"
 [[kv_namespaces]]
 binding = "CONTENT"
 id = "d2cbed9f05524f52993a7456cea24e54"
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "motif-images"

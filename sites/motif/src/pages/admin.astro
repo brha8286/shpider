@@ -74,10 +74,24 @@ import Layout from "../layouts/Layout.astro";
               </div>
               <textarea id="evt-desc" rows={3} placeholder="Description (shown on your website)" class="admin-input"></textarea>
               <input type="url" id="evt-ticket" placeholder="Ticket link" class="admin-input" />
-              <input type="url" id="evt-flyer" placeholder="Flyer image URL" class="admin-input" />
-              <div id="evt-flyer-preview" class="hidden">
-                <img id="evt-flyer-img" class="max-h-32 rounded-md border border-neutral-700" />
+              <!-- Flyer upload -->
+              <div>
+                <label class="block text-xs text-neutral-500 mb-1">Event flyer</label>
+                <label class="block w-full cursor-pointer">
+                  <div id="evt-flyer-dropzone" class="border-2 border-dashed border-neutral-700 rounded-lg p-4 text-center hover:border-neutral-500 transition-colors">
+                    <div id="evt-flyer-dropzone-text">
+                      <p class="text-sm text-neutral-400">Tap to choose a flyer image</p>
+                    </div>
+                    <div id="evt-flyer-preview" class="hidden">
+                      <img id="evt-flyer-img" class="max-h-48 mx-auto rounded-md" />
+                      <p id="evt-flyer-name" class="text-xs text-neutral-500 mt-2"></p>
+                    </div>
+                  </div>
+                  <input type="file" id="evt-flyer-file" accept="image/*" class="hidden" />
+                </label>
+                <button id="evt-flyer-clear" class="hidden mt-1 text-xs text-neutral-500 hover:text-red-400 transition-colors">Remove flyer</button>
               </div>
+              <input type="hidden" id="evt-flyer-url" value="" />
               <input type="hidden" id="evt-edit-id" value="" />
               <button id="evt-save-btn" class="w-full px-4 py-2.5 rounded-full bg-neutral-100 text-neutral-950 font-semibold text-sm hover:bg-white transition-colors">
                 Add event
@@ -223,18 +237,64 @@ import Layout from "../layouts/Layout.astro";
   const evtFormTitle = document.getElementById("evt-form-title")!;
   const evtEditId = document.getElementById("evt-edit-id") as HTMLInputElement;
   const evtSaveBtn = document.getElementById("evt-save-btn")!;
-  const evtFlyerInput = document.getElementById("evt-flyer") as HTMLInputElement;
+  const evtFlyerFileInput = document.getElementById("evt-flyer-file") as HTMLInputElement;
+  const evtFlyerUrlInput = document.getElementById("evt-flyer-url") as HTMLInputElement;
+  const evtFlyerDropzone = document.getElementById("evt-flyer-dropzone")!;
+  const evtFlyerDropzoneText = document.getElementById("evt-flyer-dropzone-text")!;
   const evtFlyerPreview = document.getElementById("evt-flyer-preview")!;
   const evtFlyerImg = document.getElementById("evt-flyer-img") as HTMLImageElement;
+  const evtFlyerName = document.getElementById("evt-flyer-name")!;
+  const evtFlyerClear = document.getElementById("evt-flyer-clear") as HTMLButtonElement;
 
-  const EVT_FIELDS = ["evt-title", "evt-date", "evt-time", "evt-venue", "evt-city", "evt-state", "evt-desc", "evt-ticket", "evt-flyer"];
+  let evtFlyerFileData: string | null = null;
+  let evtFlyerContentType: string | null = null;
+
+  function showFlyerPreview(src: string, label: string) {
+    evtFlyerImg.src = src;
+    evtFlyerName.textContent = label;
+    evtFlyerDropzoneText.classList.add("hidden");
+    evtFlyerPreview.classList.remove("hidden");
+    evtFlyerClear.classList.remove("hidden");
+  }
+
+  function clearFlyerPreview() {
+    evtFlyerFileInput.value = "";
+    evtFlyerUrlInput.value = "";
+    evtFlyerFileData = null;
+    evtFlyerContentType = null;
+    evtFlyerImg.src = "";
+    evtFlyerName.textContent = "";
+    evtFlyerPreview.classList.add("hidden");
+    evtFlyerDropzoneText.classList.remove("hidden");
+    evtFlyerClear.classList.add("hidden");
+  }
+
+  evtFlyerFileInput.addEventListener("change", () => {
+    const file = evtFlyerFileInput.files?.[0];
+    if (!file) return;
+    evtFlyerContentType = file.type;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      evtFlyerFileData = dataUrl.split(",")[1];
+      showFlyerPreview(dataUrl, file.name);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  evtFlyerClear.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    clearFlyerPreview();
+  });
+
+  const EVT_FIELDS = ["evt-title", "evt-date", "evt-time", "evt-venue", "evt-city", "evt-state", "evt-desc", "evt-ticket"];
 
   function clearEvtForm() {
     EVT_FIELDS.forEach((id) => { (document.getElementById(id) as HTMLInputElement).value = ""; });
     evtEditId.value = "";
     evtFormTitle.textContent = "New event";
     evtSaveBtn.textContent = "Add event";
-    evtFlyerPreview.classList.add("hidden");
+    clearFlyerPreview();
   }
 
   evtShowForm.addEventListener("click", () => {
@@ -249,15 +309,6 @@ import Layout from "../layouts/Layout.astro";
     evtShowForm.classList.remove("hidden");
   });
 
-  evtFlyerInput.addEventListener("input", () => {
-    if (evtFlyerInput.value) {
-      evtFlyerImg.src = evtFlyerInput.value;
-      evtFlyerPreview.classList.remove("hidden");
-      evtFlyerImg.onerror = () => evtFlyerPreview.classList.add("hidden");
-    } else {
-      evtFlyerPreview.classList.add("hidden");
-    }
-  });
 
   let eventsCache: any[] = [];
 
@@ -326,9 +377,14 @@ import Layout from "../layouts/Layout.astro";
       state: (document.getElementById("evt-state") as HTMLInputElement).value.trim(),
       description: (document.getElementById("evt-desc") as HTMLTextAreaElement).value.trim(),
       ticketUrl: (document.getElementById("evt-ticket") as HTMLInputElement).value.trim(),
-      flyerUrl: (document.getElementById("evt-flyer") as HTMLInputElement).value.trim(),
+      flyerUrl: evtFlyerUrlInput.value.trim(),
       isPublic: true,
     };
+    if (evtFlyerFileData && evtFlyerContentType) {
+      body.flyerFileData = evtFlyerFileData;
+      body.flyerContentType = evtFlyerContentType;
+      delete body.flyerUrl;
+    }
 
     const editId = evtEditId.value;
     let res;
@@ -369,10 +425,13 @@ import Layout from "../layouts/Layout.astro";
       (document.getElementById("evt-state") as HTMLInputElement).value = e.state || "";
       (document.getElementById("evt-desc") as HTMLTextAreaElement).value = e.description || "";
       (document.getElementById("evt-ticket") as HTMLInputElement).value = e.ticketUrl || "";
-      (document.getElementById("evt-flyer") as HTMLInputElement).value = e.flyerUrl || "";
+      evtFlyerUrlInput.value = e.flyerUrl || "";
+      evtFlyerFileData = null;
+      evtFlyerContentType = null;
       if (e.flyerUrl) {
-        evtFlyerImg.src = e.flyerUrl;
-        evtFlyerPreview.classList.remove("hidden");
+        showFlyerPreview(e.flyerUrl, "Current flyer");
+      } else {
+        clearFlyerPreview();
       }
       evtFormTitle.textContent = "Edit event";
       evtSaveBtn.textContent = "Save changes";

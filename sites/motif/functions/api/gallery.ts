@@ -69,15 +69,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const id = crypto.randomUUID();
 
     const fullBytes = new Uint8Array(atob(body.fileData).split("").map((c) => c.charCodeAt(0)));
-    await env.CONTENT.put(`image:${id}`, fullBytes.buffer, {
-      metadata: { contentType: body.contentType },
+    await env.IMAGES.put(id, fullBytes.buffer, {
+      httpMetadata: { contentType: body.contentType },
     });
     url = `/api/image/${id}`;
 
     if (body.thumbData && body.thumbContentType) {
       const thumbBytes = new Uint8Array(atob(body.thumbData).split("").map((c) => c.charCodeAt(0)));
-      await env.CONTENT.put(`image:${id}-thumb`, thumbBytes.buffer, {
-        metadata: { contentType: body.thumbContentType },
+      await env.IMAGES.put(`${id}-thumb`, thumbBytes.buffer, {
+        httpMetadata: { contentType: body.thumbContentType },
       });
       thumbUrl = `/api/image/${id}-thumb`;
     }
@@ -142,8 +142,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
   // If thumbData is included, store the thumbnail in KV and set thumbUrl
   if (body.thumbData && body.thumbContentType) {
     const thumbBytes = new Uint8Array(atob(body.thumbData).split("").map((c) => c.charCodeAt(0)));
-    await env.CONTENT.put(`image:${body.id}-thumb`, thumbBytes.buffer, {
-      metadata: { contentType: body.thumbContentType },
+    await env.IMAGES.put(`${body.id}-thumb`, thumbBytes.buffer, {
+      httpMetadata: { contentType: body.thumbContentType },
     });
     body.thumbUrl = `/api/image/${body.id}-thumb`;
   }
@@ -174,8 +174,17 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
   }
 
   let images = await getGallery(env);
+  const deleted = images.find((i) => i.id === id);
   images = images.filter((i) => i.id !== id);
   await setGallery(env, images);
+
+  if (deleted?.url.startsWith("/api/image/")) {
+    const r2Key = deleted.url.replace("/api/image/", "");
+    await env.IMAGES.delete(r2Key);
+    if (deleted.thumbUrl?.startsWith("/api/image/")) {
+      await env.IMAGES.delete(deleted.thumbUrl.replace("/api/image/", ""));
+    }
+  }
 
   return new Response(JSON.stringify({ ok: true }), {
     headers: { "Content-Type": "application/json" },
