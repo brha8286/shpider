@@ -1,11 +1,20 @@
 import { Env } from "../_auth";
 
-// Serves an image stored in KV. Public, no auth required.
-// Images are stored as base64 under key "image:<id>" with metadata { contentType }.
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const { env, params } = context;
   const id = params.id as string;
 
+  const obj = await env.IMAGES.get(id);
+  if (obj) {
+    return new Response(obj.body, {
+      headers: {
+        "Content-Type": obj.httpMetadata?.contentType || "image/jpeg",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  }
+
+  // Fallback: images uploaded before R2 migration were stored in KV
   const result = await env.CONTENT.getWithMetadata<{ contentType: string }>(
     `image:${id}`,
     { type: "arrayBuffer" }

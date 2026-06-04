@@ -4,6 +4,7 @@
 
 export interface Env {
   CONTENT: KVNamespace;
+  IMAGES: R2Bucket;
   ADMIN_PASSWORD?: string;
 }
 
