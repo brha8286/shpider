@@ -26,12 +26,14 @@ async function setEvents(env: Env, events: EventItem[]): Promise<void> {
   await env.CONTENT.put(KV_KEY, JSON.stringify(events));
 }
 
-// GET /api/events — public (no auth), returns only public future events
+// GET /api/events — public (no auth), returns only public future events (ascending)
+// GET /api/events?past=1 — public (no auth), returns public past events (most recent first)
 // GET /api/events?all=1 — admin (auth required), returns all events
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);
   const all = url.searchParams.get("all") === "1";
+  const past = url.searchParams.get("past") === "1";
 
   if (all) {
     const denied = requireAuth(request, env);
@@ -40,13 +42,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   let events = await getEvents(env);
 
-  if (!all) {
+  if (all) {
+    events = events.sort((a, b) => a.eventDate.localeCompare(b.eventDate));
+  } else if (past) {
+    const today = new Date().toISOString().slice(0, 10);
+    events = events
+      .filter((e) => e.isPublic && e.eventDate < today)
+      .sort((a, b) => b.eventDate.localeCompare(a.eventDate));
+  } else {
     const today = new Date().toISOString().slice(0, 10);
     events = events
       .filter((e) => e.isPublic && e.eventDate >= today)
       .sort((a, b) => a.eventDate.localeCompare(b.eventDate));
-  } else {
-    events = events.sort((a, b) => a.eventDate.localeCompare(b.eventDate));
   }
 
   return new Response(JSON.stringify({ events }), {
