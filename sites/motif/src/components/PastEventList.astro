@@ -44,7 +44,7 @@
           if (e.flyerUrl) {
             return `
               <li class="border border-neutral-900 rounded-xl p-5 hover:border-neutral-700 transition-colors list-none flex gap-5 items-start opacity-80">
-                <div class="min-w-0 flex-1 flex flex-col" style="min-height:200px">
+                <div class="min-w-0 flex-1 flex flex-col" style="min-height:140px">
                   <div class="text-xs uppercase tracking-wider text-neutral-500">${formatted}</div>
                   <div class="flex-1 flex flex-col justify-center">
                     <div class="font-[Space_Grotesk,system-ui,sans-serif] text-xl font-bold">${e.title}</div>
@@ -52,7 +52,7 @@
                   </div>
                   ${e.description ? `<div class="text-sm text-neutral-400">${e.description}</div>` : ""}
                 </div>
-                <img src="${e.flyerUrl}" alt="Flyer for ${e.title}" loading="lazy" style="height:200px;width:auto;max-width:40%;object-fit:contain;flex-shrink:0;border-radius:0.5rem" />
+                <img src="${e.flyerUrl}" alt="Flyer for ${e.title}" loading="lazy" style="height:140px;width:auto;max-width:40%;object-fit:contain;flex-shrink:0;border-radius:0.5rem" />
               </li>
             `;
           }
