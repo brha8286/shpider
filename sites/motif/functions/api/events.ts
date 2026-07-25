@@ -26,6 +26,18 @@ async function setEvents(env: Env, events: EventItem[]): Promise<void> {
   await env.CONTENT.put(KV_KEY, JSON.stringify(events));
 }
 
+// An event counts as "upcoming" until 8am the next morning in the venue's
+// timezone, so tonight's show doesn't flip to past mid-show.
+function effectiveToday(): string {
+  const shifted = new Date(Date.now() - 8 * 60 * 60 * 1000);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(shifted);
+}
+
 // GET /api/events — public (no auth), returns only public future events (ascending)
 // GET /api/events?past=1 — public (no auth), returns public past events (most recent first)
 // GET /api/events?all=1 — admin (auth required), returns all events
@@ -45,12 +57,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   if (all) {
     events = events.sort((a, b) => a.eventDate.localeCompare(b.eventDate));
   } else if (past) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = effectiveToday();
     events = events
       .filter((e) => e.isPublic && e.eventDate < today)
       .sort((a, b) => b.eventDate.localeCompare(a.eventDate));
   } else {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = effectiveToday();
     events = events
       .filter((e) => e.isPublic && e.eventDate >= today)
       .sort((a, b) => a.eventDate.localeCompare(b.eventDate));
